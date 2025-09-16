@@ -45,16 +45,12 @@
 
                 document.getElementById("open-inventory").onclick = () => {
                     OBR.modal.open({
-                        id: "com.example.inventory/modal",
-                        url: "https://zevankai.github.io/OwlBearInventory/inventory.html",
-                        width: 800,
-                        height: 700,
+                        id: "com.example.inventory/modal"
                     });
                 };
             });
         }
-
-        // This polling function will wait until the OBR object is ready
+        
         function initialize() {
             if (window.OBR) {
                 main();
@@ -62,8 +58,6 @@
                 setTimeout(initialize, 100);
             }
         }
-
-        // Start the process after the window loads
         window.addEventListener('load', initialize);
     </script>
 </body>
