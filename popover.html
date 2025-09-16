@@ -38,8 +38,7 @@
     </div>
 
     <script>
-        // This wrapper prevents our code from running until the OBR SDK is fully loaded.
-        window.addEventListener('load', () => {
+        function main() {
             OBR.onReady(() => {
                 OBR.popover.setHeight(60);
                 OBR.popover.setWidth(170);
@@ -53,7 +52,19 @@
                     });
                 };
             });
-        });
+        }
+
+        // This polling function will wait until the OBR object is ready
+        function initialize() {
+            if (window.OBR) {
+                main();
+            } else {
+                setTimeout(initialize, 100);
+            }
+        }
+
+        // Start the process after the window loads
+        window.addEventListener('load', initialize);
     </script>
 </body>
 </html>
