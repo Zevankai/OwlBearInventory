@@ -1,11 +1,18 @@
 {
   "manifest_version": 2,
   "name": "Player Inventory",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "A weight-based inventory and equipment system with gold tracking.",
   "action": {
     "title": "Inventory",
     "icon": "https://zevankai.github.io/OwlBearInventory/popover.html",
     "popover": "https://zevankai.github.io/OwlBearInventory/popover.html"
-  }
+  },
+  "windows": [
+    {
+      "id": "com.example.inventory/modal",
+      "type": "modal",
+      "url": "https://zevankai.github.io/OwlBearInventory/inventory.html"
+    }
+  ]
 }
