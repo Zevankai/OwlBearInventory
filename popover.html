@@ -5,17 +5,18 @@
     <title>Open Inventory</title>
     <script src="https://unpkg.com/@owlbear-rodeo/sdk@2.0.1/lib/umd/index.js"></script>
     <style>
-        body {
-            margin: 0;
+        body { margin: 0; overflow: hidden; }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 170px;
+            height: 60px;
             background-color: #1a1a2e;
-            color: #e0e0e0;
-            font-family: sans-serif;
-            overflow: hidden; /* Prevents scrollbars */
         }
         button {
             width: 150px;
             height: 40px;
-            margin: 10px;
             background-color: #e94560;
             color: white;
             border: none;
@@ -24,18 +25,22 @@
             cursor: pointer;
             font-weight: bold;
         }
-        button:hover {
-            background-color: #f0627b;
-        }
+        button:hover { background-color: #f0627b; }
     </style>
 </head>
 <body>
-    <button id="open-inventory">Open Inventory</button>
+    <svg id="icon" style="display: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
+      <path d="M20,6H17.82A4.23,4.23,0,0,0,14,2.18V2a2,2,0,0,0-4,0v.18A4.23,4.23,0,0,0,6.18,6H4A2,2,0,0,0,2,8V20a2,2,0,0,0,2,2H20a2,2,0,0,0,2-2V8A2,2,0,0,0,20,6ZM12,4a2.24,2.24,0,0,1,2,1.8V6H10V5.8A2.24,2.24,0,0,1,12,4ZM20,20H4V8H20Z"/>
+    </svg>
+
+    <div class="container">
+        <button id="open-inventory">Open Inventory</button>
+    </div>
+
     <script>
         OBR.onReady(() => {
-            // Set the size of this popover window
-            OBR.popover.setWidth(170);
             OBR.popover.setHeight(60);
+            OBR.popover.setWidth(170);
 
             document.getElementById("open-inventory").onclick = () => {
                 OBR.modal.open({
