@@ -1,41 +1,97 @@
-function main() {
-    console.log("Step 1: main() function has started.");
-
-    OBR.onReady(() => {
-        console.log("Step 2: OBR.onReady() callback has fired.");
-
-        OBR.popover.setHeight(60);
-        OBR.popover.setWidth(170);
-        console.log("Step 3: Popover dimensions have been set.");
-
-        const button = document.getElementById("open-inventory");
-        console.log("Step 4: Searched for button. Result:", button);
-
-        if (button) {
-            console.log("Step 5: Button was found! Attaching .onclick handler.");
-            button.onclick = () => {
-                console.log("Step 6: SUCCESS! The .onclick handler has fired!");
-                button.textContent = "Clicked!";
-                OBR.modal.open({
-                    id: "com.example.inventory/modal",
-                    url: "https://zevankai.github.io/OwlBearInventory/inventory.html",
-                    width: 800,
-                    height: 700
-                });
-            };
-        } else {
-            console.error("CRITICAL FAILURE: Button with id 'open-inventory' was NOT found.");
-        }
-    });
-}
+// More robust initialization
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM Content Loaded");
+    initialize();
+});
 
 function initialize() {
-    if (window.OBR) {
+    console.log("Initialize called, checking for OBR...");
+    
+    if (typeof OBR !== 'undefined' && OBR.isReady) {
+        console.log("OBR is ready immediately");
         main();
+    } else if (typeof OBR !== 'undefined') {
+        console.log("OBR exists but not ready, waiting for onReady...");
+        OBR.onReady(() => {
+            console.log("OBR.onReady fired");
+            main();
+        });
     } else {
+        console.log("OBR not found, retrying in 100ms...");
         setTimeout(initialize, 100);
     }
 }
 
-// We call initialize() directly, which will poll for the OBR object.
-initialize();
+function main() {
+    console.log("Main function started");
+    
+    try {
+        // Set popover dimensions
+        OBR.popover.setHeight(60);
+        OBR.popover.setWidth(170);
+        console.log("Popover dimensions set");
+
+        const button = document.getElementById("open-inventory");
+        console.log("Button found:", button);
+
+        if (button) {
+            // Remove any existing listeners
+            button.onclick = null;
+            
+            // Add click event listener
+            button.addEventListener('click', handleButtonClick);
+            
+            // Also add onclick as backup
+            button.onclick = handleButtonClick;
+            
+            console.log("Event listeners attached to button");
+        } else {
+            console.error("Button with id 'open-inventory' not found!");
+        }
+    } catch (error) {
+        console.error("Error in main function:", error);
+    }
+}
+
+function handleButtonClick(event) {
+    console.log("Button clicked! Event:", event);
+    
+    try {
+        const button = document.getElementById("open-inventory");
+        if (button) {
+            button.textContent = "Opening...";
+            button.disabled = true;
+        }
+        
+        console.log("About to open modal...");
+        
+        OBR.modal.open({
+            id: "com.example.inventory/modal",
+            url: "/inventory.html", // Use relative path
+            width: 800,
+            height: 700
+        }).then(() => {
+            console.log("Modal opened successfully");
+            if (button) {
+                button.textContent = "Open Inventory";
+                button.disabled = false;
+            }
+        }).catch(error => {
+            console.error("Error opening modal:", error);
+            if (button) {
+                button.textContent = "Open Inventory";
+                button.disabled = false;
+            }
+        });
+        
+    } catch (error) {
+        console.error("Error in handleButtonClick:", error);
+    }
+}
+
+// Start initialization immediately if script loads after DOM
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialize);
+} else {
+    initialize();
+}
