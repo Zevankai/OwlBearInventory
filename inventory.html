@@ -1,12 +1,3 @@
-Of course. Here is the complete, updated `inventory.html` file.
-
-The only change is in the `OBR.onReady` function at the very bottom. The logic for creating the toolbar button (`OBR.tool.create`) has been removed, as that responsibility is now handled by the `manifest.json` file when you host it online.
-
------
-
-### `inventory.html` (for GitHub / Online Hosting)
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -94,7 +85,7 @@ The only change is in the `OBR.onReady` function at the very bottom. The logic f
             flex-direction: column;
             gap: 15px;
             overflow-y: auto;
-            padding-right: 10px; /* For scrollbar */
+            padding-right: 10px;
         }
         .left-panel { flex: 1; }
         .right-panel { flex: 2; }
@@ -240,7 +231,7 @@ The only change is in the `OBR.onReady` function at the very bottom. The logic f
             list-style: none;
             padding: 0;
             margin: 0;
-            max-height: 250px; /* Adjust as needed */
+            max-height: 250px;
             overflow-y: auto;
         }
         
@@ -335,7 +326,7 @@ The only change is in the `OBR.onReady` function at the very bottom. The logic f
                 <div class="section">
                     <div class="section-title">Equipment</div>
                     <div id="equipment-container" class="equipment-grid">
-                        </div>
+                    </div>
                 </div>
                 <div class="section">
                     <div class="section-title">Gold</div>
@@ -412,7 +403,6 @@ The only change is in the `OBR.onReady` function at the very bottom. The logic f
         </div>
     </div>
 
-
     <script>
         const EXTENSION_ID = "com.example.inventory";
         const METADATA_KEY = `${EXTENSION_ID}/data`;
@@ -474,11 +464,11 @@ The only change is in the `OBR.onReady` function at the very bottom. The logic f
         }
 
         // --- UI RENDERING ---
-        function render() {
+        async function render() {
             const viewedPlayer = getPlayerData(localState.viewedPlayerId);
             const isReadOnly = localState.currentUserId !== localState.viewedPlayerId && !localState.isGM;
 
-            renderPlayerSelector();
+            await renderPlayerSelector();
             renderBackpack(viewedPlayer, isReadOnly);
             renderEquipment(viewedPlayer, isReadOnly);
             renderInventory(viewedPlayer, isReadOnly);
@@ -486,9 +476,9 @@ The only change is in the `OBR.onReady` function at the very bottom. The logic f
             document.getElementById('add-item-form').style.display = isReadOnly ? 'none' : 'grid';
         }
 
-        function renderPlayerSelector() {
+        async function renderPlayerSelector() {
             const selector = document.getElementById('player-selector');
-            const players = OBR.party.getPlayers();
+            const players = await OBR.party.getPlayers();
             
             // Only GMs can see players who haven't opened the extension yet
             const playerIdsInState = Object.keys(localState.players);
@@ -643,7 +633,7 @@ The only change is in the `OBR.onReady` function at the very bottom. The logic f
                 playerData.gold.pouches -= 10;
                 playerData.gold.sacks += 1;
             }
-             while (playerData.gold.pieces < 0 && playerData.gold.pouches > 0) {
+            while (playerData.gold.pieces < 0 && playerData.gold.pouches > 0) {
                 playerData.gold.pieces += 10;
                 playerData.gold.pouches -= 1;
             }
@@ -663,15 +653,15 @@ The only change is in the `OBR.onReady` function at the very bottom. The logic f
                 if (!playerData.equipment.secondary_weapon) return 'secondary_weapon';
             }
             if (itemType === 'armor' && !playerData.equipment.chest) return 'chest';
-            if (itemType === 'clothing') { // Tries to find any empty clothing slot
+            if (itemType === 'clothing') {
                 const clothingSlots = ['head', 'face', 'neck', 'chest', 'arms', 'gloves', 'waist', 'legs', 'feet'];
                 for (const slot of clothingSlots) {
                     if(!playerData.equipment[slot]) return slot;
                 }
             }
             // General items go to general slots
-             const generalIndex = playerData.equipment.general.findIndex(slot => slot === null);
-             if (generalIndex !== -1) return `general:${generalIndex}`;
+            const generalIndex = playerData.equipment.general.findIndex(slot => slot === null);
+            if (generalIndex !== -1) return `general:${generalIndex}`;
             
             return null; // No available slot
         }
@@ -687,7 +677,7 @@ The only change is in the `OBR.onReady` function at the very bottom. The logic f
                 const playerData = getPlayerData(localState.viewedPlayerId);
                 playerData.backpackType = e.target.value;
                 await saveData();
-                render(); // Re-render to update slots and weight
+                render();
             });
             
             document.getElementById('add-item-form').addEventListener('submit', async (e) => {
@@ -701,7 +691,7 @@ The only change is in the `OBR.onReady` function at the very bottom. The logic f
                 if (type === 'arrows') {
                     const existingArrows = playerData.inventory.find(item => item.type === 'arrows' && item.name.toLowerCase() === name.toLowerCase());
                     if (existingArrows) {
-                        existingArrows.quantity += 5; // Add a stack
+                        existingArrows.quantity += 5;
                     } else {
                         playerData.inventory.push({ name, type, desc, features, quantity: 5, id: Date.now() });
                     }
@@ -805,12 +795,15 @@ The only change is in the `OBR.onReady` function at the very bottom. The logic f
                 localState.viewedPlayerId = player.id;
                 localState.isGM = player.role === "GM";
                 
+                // Initialize room context
+                await OBR.room.get();
+                
                 await loadData();
                 getPlayerData(localState.currentUserId); // Ensure current user data exists
                 
                 OBR.party.onChange(async () => {
                     await OBR.party.get(); // Refresh party cache
-                    renderPlayerSelector();
+                    await renderPlayerSelector();
                 });
                 
                 OBR.room.onMetadataChange(async (metadata) => {
@@ -826,4 +819,3 @@ The only change is in the `OBR.onReady` function at the very bottom. The logic f
     </script>
 </body>
 </html>
-```
