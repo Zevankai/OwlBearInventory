@@ -5,7 +5,7 @@
   "description": "A weight-based inventory and equipment system with gold tracking.",
   "action": {
     "title": "Inventory",
-    "icon": "/inventory.html",
-    "popover": "/popover.html"
+    "icon": "icon.svg",
+    "popover": "inventory.html"
   }
 }
