@@ -10,6 +10,7 @@
             background-color: #1a1a2e;
             color: #e0e0e0;
             font-family: sans-serif;
+            overflow: hidden; /* Prevents scrollbars */
         }
         button {
             width: 150px;
@@ -32,6 +33,10 @@
     <button id="open-inventory">Open Inventory</button>
     <script>
         OBR.onReady(() => {
+            // Set the size of this popover window
+            OBR.popover.setWidth(170);
+            OBR.popover.setHeight(60);
+
             document.getElementById("open-inventory").onclick = () => {
                 OBR.modal.open({
                     id: "com.example.inventory/modal",
