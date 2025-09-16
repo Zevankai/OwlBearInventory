@@ -76,7 +76,9 @@
                 setTimeout(initialize, 100);
             }
         }
-        window.addEventListener('load', initialize);
+
+        // We now call initialize() directly instead of waiting for the 'load' event.
+        initialize();
     </script>
 </body>
 </html>
