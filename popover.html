@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Open Inventory</title>
-    <script src="https://unpkg.com/@owlbear-rodeo/sdk@2.0.1/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@owlbear-rodeo/sdk@2/lib/umd/index.js"></script>
     <style>
         body { margin: 0; overflow: hidden; }
         .container {
@@ -38,18 +38,21 @@
     </div>
 
     <script>
-        OBR.onReady(() => {
-            OBR.popover.setHeight(60);
-            OBR.popover.setWidth(170);
+        // This wrapper prevents our code from running until the OBR SDK is fully loaded.
+        window.addEventListener('load', () => {
+            OBR.onReady(() => {
+                OBR.popover.setHeight(60);
+                OBR.popover.setWidth(170);
 
-            document.getElementById("open-inventory").onclick = () => {
-                OBR.modal.open({
-                    id: "com.example.inventory/modal",
-                    url: "https://zevankai.github.io/OwlBearInventory/inventory.html",
-                    width: 800,
-                    height: 700,
-                });
-            };
+                document.getElementById("open-inventory").onclick = () => {
+                    OBR.modal.open({
+                        id: "com.example.inventory/modal",
+                        url: "https://zevankai.github.io/OwlBearInventory/inventory.html",
+                        width: 800,
+                        height: 700,
+                    });
+                };
+            });
         });
     </script>
 </body>
