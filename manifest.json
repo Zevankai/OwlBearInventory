@@ -1,11 +1,11 @@
 {
   "manifest_version": 2,
   "name": "Player Inventory",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "A weight-based inventory and equipment system with gold tracking.",
   "action": {
     "title": "Inventory",
-    "icon": "icon.svg",
-    "popover": "inventory.html"
+    "icon": "/icon.svg",
+    "popover": "/popover.html"
   }
 }
