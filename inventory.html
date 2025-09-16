@@ -5,84 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Backpack & Inventory</title>
     <script src="https://unpkg.com/@owlbear-rodeo/sdk@2/lib/umd/index.js"></script>
-    <style>
-        :root {
-            --bg-color: #1a1a2e;
-            --accent-color: #e94560;
-            --primary-text: #e0e0e0;
-            --secondary-text: #a0a0c0;
-            --border-color: #4a4a6a;
-            --input-bg: #2a2a4e;
-            --hover-bg: #2a2a4e;
-            --disabled-bg: #25253d;
-            --green: #28a745;
-            --yellow: #ffc107;
-            --red: #dc3545;
-        }
-        html, body {
-            margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color); color: var(--primary-text); font-size: 14px;
-        }
-        #app-container { display: flex; flex-direction: column; height: 100vh; padding: 15px; box-sizing: border-box; }
-        #overencumbered-banner { display: none; background-color: var(--red); color: white; text-align: center; padding: 8px; font-weight: bold; position: fixed; top: 0; left: 0; width: 100%; z-index: 100; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
-        .header h2 { margin: 0; color: var(--accent-color); }
-        #player-selector { background-color: var(--input-bg); color: var(--primary-text); border: 1px solid var(--border-color); border-radius: 4px; padding: 5px 8px; }
-        .main-content { display: flex; flex-grow: 1; gap: 20px; overflow: hidden; }
-        .left-panel, .right-panel { display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding-right: 10px; }
-        .left-panel { flex: 1; }
-        .right-panel { flex: 2; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--input-bg); }
-        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
-        .section { background-color: rgba(0,0,0,0.1); border: 1px solid var(--border-color); border-radius: 5px; padding: 15px; }
-        .section-title { margin: -15px -15px 15px -15px; padding: 10px 15px; border-bottom: 1px solid var(--border-color); background-color: rgba(255,255,255,0.05); border-radius: 5px 5px 0 0; font-weight: bold; color: var(--accent-color); }
-        .equipment-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .equipment-slot { background-color: var(--input-bg); border-radius: 4px; padding: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .equipment-slot-label { color: var(--secondary-text); font-size: 0.9em; margin-right: 10px; }
-        .equipment-slot-item { font-weight: bold; flex-grow: 1; text-align: right; }
-        .empty-slot { color: #666; font-style: italic; }
-        #general-slots-container { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 10px; }
-        .gold-tracker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-items: center; text-align: center; }
-        .gold-unit { background-color: var(--input-bg); padding: 10px; border-radius: 5px; }
-        .gold-unit .value { font-size: 1.5em; font-weight: bold; color: #ffd700; }
-        .gold-controls { display: flex; justify-content: center; gap: 5px; margin-top: 5px; }
-        .gold-btn { background-color: var(--border-color); border: none; color: var(--primary-text); border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-weight: bold; }
-        .gold-btn:hover { background-color: var(--accent-color); }
-        .gold-btn:disabled { background-color: var(--disabled-bg); cursor: not-allowed; }
-        #backpack-selector { width: 100%; padding: 8px; background-color: var(--input-bg); border: 1px solid var(--border-color); color: var(--primary-text); border-radius: 4px; }
-        .weight-bar-container { width: 100%; background-color: var(--input-bg); border-radius: 5px; overflow: hidden; height: 25px; position: relative; }
-        #weight-bar { height: 100%; width: 0%; transition: width 0.3s ease-in-out, background-color 0.3s ease-in-out; }
-        .weight-bar-green { background-color: var(--green); }
-        .weight-bar-yellow { background-color: var(--yellow); }
-        .weight-bar-red { background-color: var(--red); }
-        #weight-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: bold; text-shadow: 1px 1px 2px black; }
-        #inventory-list { list-style: none; padding: 0; margin: 0; max-height: 250px; overflow-y: auto; }
-        .inventory-item { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid var(--border-color); }
-        .inventory-item:last-child { border-bottom: none; }
-        .inventory-item:hover { background-color: var(--hover-bg); }
-        .item-info { flex-grow: 1; }
-        .item-name { font-weight: bold; }
-        .item-details { font-size: 0.8em; color: var(--secondary-text); }
-        .item-features { font-size: 0.8em; color: var(--accent-color); font-style: italic; }
-        .item-actions button { margin-left: 5px; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; background-color: var(--border-color); color: var(--primary-text); }
-        .item-actions button:hover { background-color: var(--accent-color); }
-        .item-actions button:disabled { background-color: var(--disabled-bg); cursor: not-allowed; }
-        #add-item-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        #add-item-form input, #add-item-form select, #add-item-form textarea { width: 100%; padding: 8px; background-color: var(--input-bg); border: 1px solid var(--border-color); color: var(--primary-text); border-radius: 4px; box-sizing: border-box; }
-        #item-name, #item-type { grid-column: span 1; }
-        #item-desc, #item-features { grid-column: span 2; }
-        #add-item-button { grid-column: span 2; background-color: var(--accent-color); color: white; font-weight: bold; cursor: pointer; }
-        #add-item-button:disabled { background-color: var(--disabled-bg); cursor: not-allowed; }
-        #bank-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
-        .bank-modal-content { background-color: var(--bg-color); padding: 20px; border: 1px solid var(--accent-color); border-radius: 5px; width: 300px; text-align: center; }
-        #bank-location-input { width: calc(100% - 20px); }
-        #save-bank-button { margin-top: 10px; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="overencumbered-banner">OVERENCUMBERED</div>
+
     <div id="app-container">
         <div class="header">
             <h2>Inventory</h2>
@@ -92,22 +19,35 @@
             <div class="left-panel">
                 <div class="section">
                     <div class="section-title">Equipment</div>
-                    <div id="equipment-container" class="equipment-grid"></div>
+                    <div id="equipment-container" class="equipment-grid">
+                        </div>
                 </div>
                 <div class="section">
                     <div class="section-title">Gold</div>
                     <div class="gold-tracker">
                         <div class="gold-unit">
-                            <div>Pieces</div><div id="gold-pieces" class="value">0</div>
-                            <div class="gold-controls"><button class="gold-btn" data-action="add" data-unit="pieces">+</button><button class="gold-btn" data-action="remove" data-unit="pieces">-</button></div>
+                            <div>Pieces</div>
+                            <div id="gold-pieces" class="value">0</div>
+                            <div class="gold-controls">
+                                <button class="gold-btn" data-action="add" data-unit="pieces">+</button>
+                                <button class="gold-btn" data-action="remove" data-unit="pieces">-</button>
+                            </div>
                         </div>
                         <div class="gold-unit">
-                            <div>Pouches</div><div id="gold-pouches" class="value">0</div>
-                            <div class="gold-controls"><button class="gold-btn" data-action="add" data-unit="pouches">+</button><button class="gold-btn" data-action="remove" data-unit="pouches">-</button></div>
+                            <div>Pouches</div>
+                            <div id="gold-pouches" class="value">0</div>
+                             <div class="gold-controls">
+                                <button class="gold-btn" data-action="add" data-unit="pouches">+</button>
+                                <button class="gold-btn" data-action="remove" data-unit="pouches">-</button>
+                            </div>
                         </div>
                         <div class="gold-unit">
-                            <div>Sacks</div><div id="gold-sacks" class="value">0</div>
-                            <div class="gold-controls"><button class="gold-btn" data-action="add" data-unit="sacks">+</button><button class="gold-btn" data-action="remove" data-unit="sacks">-</button></div>
+                            <div>Sacks</div>
+                            <div id="gold-sacks" class="value">0</div>
+                             <div class="gold-controls">
+                                <button class="gold-btn" data-action="add" data-unit="sacks">+</button>
+                                <button class="gold-btn" data-action="remove" data-unit="sacks">-</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -117,7 +57,8 @@
                     <div class="section-title">Backpack</div>
                     <select id="backpack-selector"></select>
                     <div class="weight-bar-container" style="margin-top: 10px;">
-                        <div id="weight-bar"></div><div id="weight-text">0 / 0</div>
+                        <div id="weight-bar"></div>
+                        <div id="weight-text">0 / 0</div>
                     </div>
                 </div>
                 <div class="section">
@@ -129,9 +70,12 @@
                     <form id="add-item-form">
                         <input type="text" id="item-name" placeholder="Item Name" required>
                         <select id="item-type" required>
-                            <option value="large_weapon">Large Weapon (5)</option><option value="small_weapon">Small Weapon (3)</option>
-                            <option value="armor">Armor (8)</option><option value="clothing">Clothing (2)</option>
-                            <option value="other">Other Item (1)</option><option value="arrows">Arrows (5/stack=1)</option>
+                            <option value="large_weapon">Large Weapon (5)</option>
+                            <option value="small_weapon">Small Weapon (3)</option>
+                            <option value="armor">Armor (8)</option>
+                            <option value="clothing">Clothing (2)</option>
+                            <option value="other">Other Item (1)</option>
+                            <option value="arrows">Arrows (5/stack=1)</option>
                         </select>
                         <textarea id="item-desc" rows="2" placeholder="Description (Optional)"></textarea>
                         <textarea id="item-features" rows="2" placeholder="Features (Optional, e.g., +1 AC)"></textarea>
@@ -141,6 +85,7 @@
             </div>
         </div>
     </div>
+
     <div id="bank-modal">
         <div class="bank-modal-content">
             <h3>Wealth Management</h3>
@@ -152,200 +97,6 @@
         </div>
     </div>
 
-    <script>
-        function main() {
-            OBR.onReady(async () => {
-                const EXTENSION_ID = "com.example.inventory";
-                const METADATA_KEY = `${EXTENSION_ID}/data`;
-                const BACKPACKS = {
-                    "Simple Pack": { weight: 21, slots: 3 }, "Standard Pack": { weight: 25, slots: 3 },
-                    "Warrior's Pack": { weight: 26, slots: 6 }, "Explorer's Pack": { weight: 30, slots: 4 },
-                    "Tinkerer's Pack": { weight: 21, slots: 10 }, "Mule's Pack": { weight: 50, slots: 8 },
-                };
-                const ITEM_WEIGHTS = { large_weapon: 5, small_weapon: 3, armor: 8, clothing: 2, other: 1, arrows: 1, };
-                const EQUIPMENT_SLOTS = [ 'head', 'face', 'neck', 'chest', 'arms', 'gloves', 'waist', 'legs', 'feet', 'primary_weapon', 'secondary_weapon' ];
-                let localState = { players: {}, currentUserId: null, viewedPlayerId: null, isGM: false, };
-                async function loadData() {
-                    const metadata = await OBR.room.getMetadata();
-                    localState.players = metadata[METADATA_KEY] || {};
-                }
-                async function saveData() { await OBR.room.setMetadata({ [METADATA_KEY]: localState.players }); }
-                function getPlayerData(playerId) {
-                    if (!localState.players[playerId]) {
-                         localState.players[playerId] = {
-                            backpackType: "Simple Pack", inventory: [],
-                            equipment: { head: null, face: null, neck: null, chest: null, arms: null, gloves: null, waist: null, legs: null, feet: null, primary_weapon: null, secondary_weapon: null, },
-                            gold: { pieces: 0, pouches: 0, sacks: 0 }, bankLocation: ""
-                        };
-                    }
-                    return localState.players[playerId];
-                }
-                function render() {
-                    const viewedPlayer = getPlayerData(localState.view_player_id);
-                    const isReadOnly = localState.currentUserId !== localState.viewedPlayerId && !localState.isGM;
-                    renderPlayerSelector(); renderBackpack(viewedPlayer, isReadOnly); renderEquipment(viewedPlayer, isReadOnly);
-                    renderInventory(viewedPlayer, isReadOnly); renderGold(viewedPlayer, isReadOnly);
-                    document.getElementById('add-item-form').style.display = isReadOnly ? 'none' : 'grid';
-                }
-                function renderPlayerSelector() {
-                    const selector = document.getElementById('player-selector'); const players = OBR.party.getPlayers();
-                    const playerIdsInState = Object.keys(localState.players);
-                    const visiblePlayers = localState.isGM ? players : players.filter(p => playerIdsInState.includes(p.id));
-                    selector.innerHTML = visiblePlayers.map(player => `<option value="${player.id}" ${player.id === localState.viewedPlayerId ? 'selected' : ''}>${player.name}</option>`).join('');
-                }
-                function renderBackpack(playerData, isReadOnly) {
-                    const selector = document.getElementById('backpack-selector');
-                    selector.innerHTML = Object.keys(BACKPACKS).map(name => `<option value="${name}" ${name === playerData.backpackType ? 'selected' : ''}>${name}</option>`).join('');
-                    selector.disabled = isReadOnly;
-                    const maxWeight = BACKPACKS[playerData.backpackType].weight; const currentWeight = calculateWeight(playerData.inventory);
-                    document.getElementById('weight-text').textContent = `${currentWeight} / ${maxWeight}`;
-                    const weightBar = document.getElementById('weight-bar'); const percentage = Math.min((currentWeight / maxWeight) * 100, 100);
-                    weightBar.style.width = `${percentage}%`; weightBar.className = '';
-                    if (currentWeight > maxWeight) { weightBar.classList.add('weight-bar-red');
-                    } else if (percentage > 75) { weightBar.classList.add('weight-bar-red');
-                    } else if (percentage > 50) { weightBar.classList.add('weight-bar-yellow');
-                    } else { weightBar.classList.add('weight-bar-green'); }
-                    document.getElementById('overencumbered-banner').style.display = currentWeight > maxWeight ? 'block' : 'none';
-                }
-                function renderEquipment(playerData, isReadOnly) {
-                    const container = document.getElementById('equipment-container'); container.innerHTML = '';
-                    EQUIPMENT_SLOTS.forEach(slotKey => {
-                        const item = playerData.equipment[slotKey]; const displayName = slotKey.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-                        let itemHTML = `<span class="empty-slot">Empty</span>`;
-                        if(item) { itemHTML = `<span class="equipment-slot-item" title="${item.desc || ''}">${item.name}</span><button class="unequip-btn" data-slot="${slotKey}" ${isReadOnly ? 'disabled' : ''}>✕</button>`; }
-                        container.innerHTML += `<div class="equipment-slot"><span class="equipment-slot-label">${displayName}:</span>${itemHTML}</div>`;
-                    });
-                    const generalSlotsCount = BACKPACKS[playerData.backpackType].slots;
-                    let generalSlotsHTML = `<div id="general-slots-container"><div class="equipment-slot-label" style="grid-column: 1 / -1;">General Slots (${generalSlotsCount})</div>`;
-                    if(!playerData.equipment.general) { playerData.equipment.general = Array(generalSlotsCount).fill(null); }
-                    while(playerData.equipment.general.length < generalSlotsCount) { playerData.equipment.general.push(null); }
-                    playerData.equipment.general = playerData.equipment.general.slice(0, generalSlotsCount);
-                    playerData.equipment.general.forEach((item, index) => {
-                         let itemHTML = `<span class="empty-slot">Empty</span>`;
-                         if(item) { itemHTML = `<span class="equipment-slot-item" title="${item.desc || ''}">${item.name}</span><button class="unequip-btn" data-slot="general" data-index="${index}" ${isReadOnly ? 'disabled' : ''}>✕</button>`; }
-                         generalSlotsHTML += `<div class="equipment-slot">${itemHTML}</div>`;
-                    });
-                    generalSlotsHTML += `</div>`; container.innerHTML += generalSlotsHTML;
-                }
-                function renderInventory(playerData, isReadOnly) {
-                    const list = document.getElementById('inventory-list'); list.innerHTML = '';
-                    if (playerData.inventory.length === 0) { list.innerHTML = `<li class="inventory-item"><span class="item-info">Backpack is empty.</span></li>`; return; }
-                    playerData.inventory.forEach((item, index) => {
-                        const li = document.createElement('li'); li.className = 'inventory-item';
-                        let details = `Type: ${item.type.replace('_', ' ')}, Weight: ${ITEM_WEIGHTS[item.type]}`;
-                        if (item.type === 'arrows') { details = `Arrows (x${item.quantity}), Weight: ${calculateArrowWeight(item.quantity)}`; }
-                        li.innerHTML = `<div class="item-info"><div class="item-name">${item.name}</div><div class="item-details">${details}</div>${item.features ? `<div class="item-features">${item.features}</div>` : ''}</div><div class="item-actions"><button class="equip-btn" data-index="${index}" ${isReadOnly ? 'disabled' : ''}>Equip</button><button class="delete-btn" data-index="${index}" ${isReadOnly ? 'disabled' : ''}>Del</button></div>`;
-                        list.appendChild(li);
-                    });
-                }
-                function renderGold(playerData, isReadOnly) {
-                    document.getElementById('gold-pieces').textContent = playerData.gold.pieces;
-                    document.getElementById('gold-pouches').textContent = playerData.gold.pouches;
-                    document.getElementById('gold-sacks').textContent = playerData.gold.sacks;
-                    document.querySelectorAll('.gold-btn').forEach(btn => btn.disabled = isReadOnly);
-                }
-                function calculateWeight(inventory) { return inventory.reduce((total, item) => { if (item.type === 'arrows') { return total + calculateArrowWeight(item.quantity); } return total + ITEM_WEIGHTS[item.type]; }, 0); }
-                function calculateArrowWeight(quantity) { return Math.ceil(quantity / 5); }
-                function handleGoldConversion(playerData) {
-                    while (playerData.gold.pieces >= 10) { playerData.gold.pieces -= 10; playerData.gold.pouches += 1; }
-                    while (playerData.gold.pouches >= 10) { playerData.gold.pouches -= 10; playerData.gold.sacks += 1; }
-                    while (playerData.gold.pieces < 0 && playerData.gold.pouches > 0) { playerData.gold.pieces += 10; playerData.gold.pouches -= 1; }
-                    while (playerData.gold.pouches < 0 && playerData.gold.sacks > 0) { playerData.gold.pouches += 10; playerData.gold.sacks -= 1; }
-                    if (playerData.gold.sacks >= 2) { document.getElementById('bank-modal').style.display = 'flex'; }
-                }
-                function getEmptyEquipmentSlot(playerData, itemType) {
-                    if (itemType === 'large_weapon' || itemType === 'small_weapon') {
-                        if (!playerData.equipment.primary_weapon) return 'primary_weapon'; if (!playerData.equipment.secondary_weapon) return 'secondary_weapon';
-                    }
-                    if (itemType === 'armor' && !playerData.equipment.chest) return 'chest';
-                    if (itemType === 'clothing') { const clothingSlots = ['head', 'face', 'neck', 'chest', 'arms', 'gloves', 'waist', 'legs', 'feet']; for (const slot of clothingSlots) { if(!playerData.equipment[slot]) return slot; } }
-                    const generalIndex = playerData.equipment.general.findIndex(slot => slot === null);
-                    if (generalIndex !== -1) return `general:${generalIndex}`;
-                    return null;
-                }
-                function setupEventListeners() {
-                    document.getElementById('player-selector').addEventListener('change', (e) => { localState.viewedPlayerId = e.target.value; render(); });
-                    document.getElementById('backpack-selector').addEventListener('change', async (e) => { const playerData = getPlayerData(localState.viewedPlayerId); playerData.backpackType = e.target.value; await saveData(); render(); });
-                    document.getElementById('add-item-form').addEventListener('submit', async (e) => {
-                        e.preventDefault(); const playerData = getPlayerData(localState.viewedPlayerId);
-                        const name = document.getElementById('item-name').value; const type = document.getElementById('item-type').value;
-                        const desc = document.getElementById('item-desc').value; const features = document.getElementById('item-features').value;
-                        if (type === 'arrows') {
-                            const existingArrows = playerData.inventory.find(item => item.type === 'arrows' && item.name.toLowerCase() === name.toLowerCase());
-                            if (existingArrows) { existingArrows.quantity += 5; } else { playerData.inventory.push({ name, type, desc, features, quantity: 5, id: Date.now() }); }
-                        } else { playerData.inventory.push({ name, type, desc, features, id: Date.now() }); }
-                        await saveData(); render(); e.target.reset();
-                    });
-                    document.querySelector('.main-content').addEventListener('click', async (e) => {
-                        const playerData = getPlayerData(localState.viewedPlayerId);
-                        if (e.target.classList.contains('equip-btn')) {
-                            const itemIndex = parseInt(e.target.dataset.index); const item = playerData.inventory[itemIndex];
-                            const slot = getEmptyEquipmentSlot(playerData, item.type);
-                            if(slot) { if (slot.startsWith('general:')) { const generalIndex = parseInt(slot.split(':')[1]); playerData.equipment.general[generalIndex] = item; } else { playerData.equipment[slot] = item; } playerData.inventory.splice(itemIndex, 1); await saveData(); render(); } else { alert("No available slot to equip this item!"); }
-                        }
-                        if (e.target.classList.contains('unequip-btn')) {
-                            const slot = e.target.dataset.slot; let itemToUnequip;
-                            if (slot === 'general') { const index = parseInt(e.target.dataset.index); itemToUnequip = playerData.equipment.general[index]; playerData.equipment.general[index] = null; } else { itemToUnequip = playerData.equipment[slot]; playerData.equipment[slot] = null; }
-                            if (itemToUnequip) { playerData.inventory.push(itemToUnequip); await saveData(); render(); }
-                        }
-                        if (e.target.classList.contains('delete-btn')) {
-                            const itemIndex = parseInt(e.target.dataset.index);
-                            if (confirm(`Are you sure you want to delete "${playerData.inventory[itemIndex].name}"?`)) { playerData.inventory.splice(itemIndex, 1); await saveData(); render(); }
-                        }
-                    });
-                    document.querySelector('.gold-tracker').addEventListener('click', async (e) => {
-                        if (e.target.classList.contains('gold-btn')) {
-                            const playerData = getPlayerData(localState.viewedPlayerId); const { action, unit } = e.target.dataset;
-                            const amount = (action === 'add') ? 1 : -1; playerData.gold[unit] += amount;
-                            if(playerData.gold[unit] < 0) playerData.gold[unit] = 0;
-                            handleGoldConversion(playerData); await saveData(); render();
-                        }
-                    });
-                    document.getElementById('bank-form').addEventListener('submit', async (e) => {
-                        e.preventDefault(); const playerData = getPlayerData(localState.viewedPlayerId);
-                        const location = document.getElementById('bank-location-input').value; playerData.bankLocation = location;
-                        playerData.gold.sacks -= 2; await saveData();
-                        document.getElementById('bank-modal').style.display = 'none'; e.target.reset(); render();
-                    });
-                }
-                
-                // This is the main execution block
-                if (document.getElementById('app-container')) {
-                    const player = await OBR.player.get();
-                    localState.currentUserId = player.id;
-                    localState.viewedPlayerId = player.id;
-                    localState.isGM = player.role === "GM";
-                    
-                    await loadData();
-                    getPlayerData(localState.currentUserId);
-                    
-                    OBR.party.onChange(async () => {
-                        await OBR.party.get();
-                        renderPlayerSelector();
-                    });
-                    
-                    OBR.room.onMetadataChange(async (metadata) => {
-                        localState.players = metadata[METADATA_KEY] || {};
-                        render();
-                    });
-                    
-                    setupEventListeners();
-                    render();
-                }
-            });
-        }
-        
-        // This polling function will wait until the OBR object is ready
-        function initialize() {
-            if (window.OBR) {
-                main();
-            } else {
-                setTimeout(initialize, 100);
-            }
-        }
-
-        // Start the process after the window loads
-        window.addEventListener('load', initialize);
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
